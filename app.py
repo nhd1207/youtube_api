@@ -4,6 +4,7 @@ from google.auth.transport.requests import Request
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from flask_cors import CORS, cross_origin
 
 import urllib.parse as p
 import re
@@ -13,6 +14,7 @@ import pickle
 load_dotenv()
 MONGO_URI = os.getenv('MONGO_URI')
 app = Flask(__name__)
+CORS(app)
 client = MongoClient(MONGO_URI)
 
 db = client.youtube_db
@@ -170,9 +172,15 @@ def get_comments(youtube, **kwargs):
         **kwargs
     ).execute()
 
+@app.get("/drop")
+def drop():
+    comments.drop()
+    return("dropped")
+
 @app.get("/scrape")
 def scrape():
     args = request.args
+    
     url = args.get("url")
     if "watch" in url:
         video_id = get_video_id_by_url(url)
@@ -180,7 +188,6 @@ def scrape():
             'videoId': video_id,
             'order': 'relevance'
         }
-        comments.drop()
     else:
         return("not a video")
     while True:
