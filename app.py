@@ -1,11 +1,22 @@
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+from flask import Flask, request, jsonify
+from pymongo import MongoClient
+from dotenv import load_dotenv
 
 import urllib.parse as p
 import re
 import os
 import pickle
+
+load_dotenv()
+MONGO_URI = os.getenv('MONGO_URI')
+app = Flask(__name__)
+client = MongoClient(MONGO_URI)
+
+db = client.youtube_db
+comments = db.comments
 
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
@@ -159,59 +170,96 @@ def get_comments(youtube, **kwargs):
         **kwargs
     ).execute()
 
-# URL can be a channel or a video, to extract comments
-url = "https://www.youtube.com/watch?v=6QJXXJe9Tos"
-if "watch" in url:
-    # that's a video
-    video_id = get_video_id_by_url(url)
-    params = {
-        'videoId': video_id, 
-        # 'maxResults': 10,
-        'order': 'relevance', # default is 'time' (newest)
-    }
-else:
-    # should be a channel
-    channel_id = get_channel_id_by_url(url)
-    params = {
-        'allThreadsRelatedToChannelId': channel_id, 
-        'maxResults': 2,
-        'order': 'relevance', # default is 'time' (newest)
-    }
-
-f = open("comments.csv", "w")
-
-f.write("commentId,author,content,updatedAt\n")
-
-while True:
-    # make API call to get all comments from the channel (including posts & videos)
-    response = get_comments(youtube, **params)
-    items = response.get("items")
-    # if items is empty, breakout of the loop
-    if not items:
-        break
-    # print(items[1]["snippet"]["topLevelComment"]["snippet"])
-    for item in items:
-        author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
-        comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
-        updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
-        like_count = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
-        comment_id = item["snippet"]["topLevelComment"]["id"]
-
-        # f.write(f"""
-        # Author: {author}
-        # Comment: {comment}
-        # Likes: {like_count}
-        # Updated At: {updated_at}
-        # ==================================\n
-        # """)
-
-        f.write(f"{comment_id},{author},{comment},{updated_at}\n")
-    if "nextPageToken" in response:
-        # if there is a next page
-        # add next page token to the params we pass to the function
-        params["pageToken"] =  response["nextPageToken"]
+@app.get("/scrape")
+def scrape():
+    args = request.args
+    url = args.get("url")
+    if "watch" in url:
+        video_id = get_video_id_by_url(url)
+        params = {
+            'videoId': video_id,
+            'order': 'relevance'
+        }
+        comments.drop()
     else:
-        # must be end of comments!!!!
-        break
+        return("not a video")
+    while True:
+        response = get_comments(youtube, **params)
+        items = response.get("items")
 
-f.close()
+        if not items:
+            break
+        for item in items:
+            author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
+            comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+            updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
+            comment_id = item["snippet"]["topLevelComment"]["id"]
+
+            comments.insert_one({
+                "commentId": comment_id,
+                "author": author,
+                "content": comment,
+                "date": updated_at
+            })
+        if "nextPageToken" in response:
+            params["pageToken"] = response["nextPageToken"]
+        else:
+            break
+    return("scrape succeeded")
+
+# # URL can be a channel or a video, to extract comments
+# url = "https://www.youtube.com/watch?v=6QJXXJe9Tos"
+# if "watch" in url:
+#     # that's a video
+#     video_id = get_video_id_by_url(url)
+#     params = {
+#         'videoId': video_id, 
+#         # 'maxResults': 10,
+#         'order': 'relevance', # default is 'time' (newest)
+#     }
+# else:
+#     # should be a channel
+#     channel_id = get_channel_id_by_url(url)
+#     params = {
+#         'allThreadsRelatedToChannelId': channel_id, 
+#         'maxResults': 2,
+#         'order': 'relevance', # default is 'time' (newest)
+#     }
+
+# f = open("comments.csv", "w")
+
+# f.write("commentId,author,content,updatedAt\n")
+
+# while True:
+#     # make API call to get all comments from the channel (including posts & videos)
+#     response = get_comments(youtube, **params)
+#     items = response.get("items")
+#     # if items is empty, breakout of the loop
+#     if not items:
+#         break
+#     # print(items[1]["snippet"]["topLevelComment"]["snippet"])
+#     for item in items:
+#         author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
+#         comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+#         updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
+#         like_count = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
+#         comment_id = item["snippet"]["topLevelComment"]["id"]
+
+#         # f.write(f"""
+#         # Author: {author}
+#         # Comment: {comment}
+#         # Likes: {like_count}
+#         # Updated At: {updated_at}
+#         # ==================================\n
+#         # """)
+
+#         f.write(f"{comment_id},{author},{comment},{updated_at}\n")
+#     if "nextPageToken" in response:
+#         # if there is a next page
+#         # add next page token to the params we pass to the function
+#         params["pageToken"] =  response["nextPageToken"]
+#     else:
+#         # must be end of comments!!!!
+#         break
+
+# f.close()
