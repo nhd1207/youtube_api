@@ -180,7 +180,7 @@ def drop():
 @app.get("/scrape")
 def scrape():
     args = request.args
-    
+    video_id = ""
     url = args.get("url")
     if "watch" in url:
         video_id = get_video_id_by_url(url)
@@ -188,8 +188,14 @@ def scrape():
             'videoId': video_id,
             'order': 'relevance'
         }
+
     else:
         return("not a video")
+    youtube_video = { 
+        "youtube_url": url,
+        "name": get_video_details(youtube, id=video_id).get("items")[0]["snippet"]["title"],
+        "comments": []
+    }
     while True:
         response = get_comments(youtube, **params)
         items = response.get("items")
@@ -202,7 +208,7 @@ def scrape():
             updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
             comment_id = item["snippet"]["topLevelComment"]["id"]
 
-            comments.insert_one({
+            youtube_video["comments"].append({
                 "commentId": comment_id,
                 "author": author,
                 "content": comment,
@@ -212,6 +218,7 @@ def scrape():
             params["pageToken"] = response["nextPageToken"]
         else:
             break
+    comments.update_one({"youtube_url": url}, {"$set": youtube_video}, upsert=True)
     return("scrape succeeded")
 
 # # URL can be a channel or a video, to extract comments
