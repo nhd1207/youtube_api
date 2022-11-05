@@ -5,6 +5,8 @@ from flask import Flask, request, jsonify
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from flask_cors import CORS, cross_origin
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 import urllib.parse as p
 import re
@@ -16,6 +18,10 @@ MONGO_URI = os.getenv('MONGO_URI')
 app = Flask(__name__)
 CORS(app)
 client = MongoClient(MONGO_URI)
+
+# Azure blob
+connect_str = "DefaultEndpointsProtocol=https;AccountName=nhdis402;AccountKey=fFcd6ChgUnWAdQljFlm7S8NBKenwgq/Y3QXbMPK/f8a9pQ3dInH4/VB4Dsn/ZpPFoXInLBsDM7Wu+AStesaMTQ==;EndpointSuffix=core.windows.net"
+blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
 db = client.youtube_db
 comments = db.comments
@@ -221,59 +227,68 @@ def scrape():
     comments.update_one({"youtube_url": url}, {"$set": youtube_video}, upsert=True)
     return("scrape succeeded")
 
-# # URL can be a channel or a video, to extract comments
-# url = "https://www.youtube.com/watch?v=6QJXXJe9Tos"
-# if "watch" in url:
-#     # that's a video
-#     video_id = get_video_id_by_url(url)
-#     params = {
-#         'videoId': video_id, 
-#         # 'maxResults': 10,
-#         'order': 'relevance', # default is 'time' (newest)
-#     }
-# else:
-#     # should be a channel
-#     channel_id = get_channel_id_by_url(url)
-#     params = {
-#         'allThreadsRelatedToChannelId': channel_id, 
-#         'maxResults': 2,
-#         'order': 'relevance', # default is 'time' (newest)
-#     }
+# URL can be a channel or a video, to extract comments
+url = "https://www.youtube.com/watch?v=6QJXXJe9Tos"
+pattern = '[a-zA-Z0-9:/.?]+'
+get_id = re.findall(pattern, url)[1]
+file_name = f"youtube_url_{get_id}.csv"
 
-# f = open("comments.csv", "w")
+if "watch" in url:
+    # that's a video
+    video_id = get_video_id_by_url(url)
+    params = {
+        'videoId': video_id, 
+        # 'maxResults': 10,
+        'order': 'relevance', # default is 'time' (newest)
+    }
+else:
+    # should be a channel
+    channel_id = get_channel_id_by_url(url)
+    params = {
+        'allThreadsRelatedToChannelId': channel_id, 
+        'maxResults': 2,
+        'order': 'relevance', # default is 'time' (newest)
+    }
 
-# f.write("commentId,author,content,updatedAt\n")
+f = open(f"output/{file_name}", "w")
 
-# while True:
-#     # make API call to get all comments from the channel (including posts & videos)
-#     response = get_comments(youtube, **params)
-#     items = response.get("items")
-#     # if items is empty, breakout of the loop
-#     if not items:
-#         break
-#     # print(items[1]["snippet"]["topLevelComment"]["snippet"])
-#     for item in items:
-#         author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
-#         comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
-#         updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
-#         like_count = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
-#         comment_id = item["snippet"]["topLevelComment"]["id"]
+f.write("author,content,updatedAt\n")
 
-#         # f.write(f"""
-#         # Author: {author}
-#         # Comment: {comment}
-#         # Likes: {like_count}
-#         # Updated At: {updated_at}
-#         # ==================================\n
-#         # """)
+while True:
+    # make API call to get all comments from the channel (including posts & videos)
+    response = get_comments(youtube, **params)
+    items = response.get("items")
+    # if items is empty, breakout of the loop
+    if not items:
+        break
+    # print(items[1]["snippet"]["topLevelComment"]["snippet"])
+    for item in items:
+        author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
+        comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
+        updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
+        like_count = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
+        comment_id = item["snippet"]["topLevelComment"]["id"]
 
-#         f.write(f"{comment_id},{author},{comment},{updated_at}\n")
-#     if "nextPageToken" in response:
-#         # if there is a next page
-#         # add next page token to the params we pass to the function
-#         params["pageToken"] =  response["nextPageToken"]
-#     else:
-#         # must be end of comments!!!!
-#         break
+        # f.write(f"""
+        # Author: {author}
+        # Comment: {comment}
+        # Likes: {like_count}
+        # Updated At: {updated_at}
+        # ==================================\n
+        # """)
 
-# f.close()
+        f.write(f"{author},{comment},{updated_at}\n")
+    if "nextPageToken" in response:
+        # if there is a next page
+        # add next page token to the params we pass to the function
+        params["pageToken"] =  response["nextPageToken"]
+    else:
+        # must be end of comments!!!!
+        break
+
+f.close()
+
+blob_client = blob_service_client.get_blob_client(container="data", blob=file_name)
+
+with open(file=f"./output/{file_name}", mode="rb") as data:
+    blob_client.upload_blob(data)
