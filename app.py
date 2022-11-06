@@ -6,7 +6,6 @@ from flask_cors import CORS, cross_origin
 import urllib.parse as p
 import re
 import os
-import json
 
 load_dotenv()
 MONGO_URI = os.getenv('MONGO_URI')
@@ -26,6 +25,6 @@ comments = db.comments
 def save_youtube_url():
     url = request.json.get("url")
     pattern = '[a-zA-Z0-9:/.?]+'
-    id = re.findall(pattern, url)
-    comments.insert_one({ "id": id, "url": url, "signal": "start" })
+    id = re.findall(pattern, url)[1]
+    comments.update_one({"id": id}, {"$set": { "id": id, "url": url, "signal": "start" }}, upsert=True)
     return("succeed" + url)
