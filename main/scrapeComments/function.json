@@ -2,14 +2,19 @@
   "scriptFile": "__init__.py",
   "bindings": [
     {
-      "type": "cosmosDBTrigger",
-      "name": "documents",
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
       "direction": "in",
-      "leaseCollectionName": "leases",
-      "connectionStringSetting": "",
-      "databaseName": "",
-      "collectionName": "",
-      "createLeaseCollectionIfNotExists": true
+      "name": "req",
+      "methods": [
+        "post"
+      ],
+      "route": "/{*route}"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
     }
   ]
 }
