@@ -202,93 +202,45 @@ def scrape():
         "name": get_video_details(youtube, id=video_id).get("items")[0]["snippet"]["title"],
         "comments": []
     }
+    pattern = '[a-zA-Z0-9:/.?]+'
+    get_id = re.findall(pattern, url)[1]
+    file_name = f"youtube_url_{get_id}.csv"
+    f = open(f"output/{file_name}", "w")
+
+    f.write("youtube_url,content\n")
+
     while True:
+        # make API call to get all comments from the channel (including posts & videos)
         response = get_comments(youtube, **params)
         items = response.get("items")
-
+        # if items is empty, breakout of the loop
         if not items:
             break
+        # print(items[1]["snippet"]["topLevelComment"]["snippet"])
         for item in items:
-            author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
-            comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
-            updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
-            comment_id = item["snippet"]["topLevelComment"]["id"]
+            comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"].replace("\n","\\n")
 
-            youtube_video["comments"].append({
-                "commentId": comment_id,
-                "author": author,
-                "content": comment,
-                "date": updated_at
-            })
+            # f.write(f"""
+            # Author: {author}
+            # Comment: {comment}
+            # Likes: {like_count}
+            # Updated At: {updated_at}
+            # ==================================\n
+            # """)
+
+            f.write(f"{url},{comment}\n")
         if "nextPageToken" in response:
-            params["pageToken"] = response["nextPageToken"]
+            # if there is a next page
+            # add next page token to the params we pass to the function
+            params["pageToken"] =  response["nextPageToken"]
         else:
+            # must be end of comments!!!!
             break
-    comments.update_one({"youtube_url": url}, {"$set": youtube_video}, upsert=True)
+
+    f.close()
+
+    blob_client = blob_service_client.get_blob_client(container="data", blob=file_name)
+
+    with open(file=f"./output/{file_name}", mode="rb") as data:
+        blob_client.upload_blob(data)
     return("scrape succeeded")
-
-# URL can be a channel or a video, to extract comments
-url = "https://www.youtube.com/watch?v=6QJXXJe9Tos"
-pattern = '[a-zA-Z0-9:/.?]+'
-get_id = re.findall(pattern, url)[1]
-file_name = f"youtube_url_{get_id}.csv"
-
-if "watch" in url:
-    # that's a video
-    video_id = get_video_id_by_url(url)
-    params = {
-        'videoId': video_id, 
-        # 'maxResults': 10,
-        'order': 'relevance', # default is 'time' (newest)
-    }
-else:
-    # should be a channel
-    channel_id = get_channel_id_by_url(url)
-    params = {
-        'allThreadsRelatedToChannelId': channel_id, 
-        'maxResults': 2,
-        'order': 'relevance', # default is 'time' (newest)
-    }
-
-f = open(f"output/{file_name}", "w")
-
-f.write("author,content,updatedAt\n")
-
-while True:
-    # make API call to get all comments from the channel (including posts & videos)
-    response = get_comments(youtube, **params)
-    items = response.get("items")
-    # if items is empty, breakout of the loop
-    if not items:
-        break
-    # print(items[1]["snippet"]["topLevelComment"]["snippet"])
-    for item in items:
-        author = item["snippet"]["topLevelComment"]["snippet"]["authorDisplayName"]
-        comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"]
-        updated_at = item["snippet"]["topLevelComment"]["snippet"]["updatedAt"]
-        like_count = item["snippet"]["topLevelComment"]["snippet"]["likeCount"]
-        comment_id = item["snippet"]["topLevelComment"]["id"]
-
-        # f.write(f"""
-        # Author: {author}
-        # Comment: {comment}
-        # Likes: {like_count}
-        # Updated At: {updated_at}
-        # ==================================\n
-        # """)
-
-        f.write(f"{author},{comment},{updated_at}\n")
-    if "nextPageToken" in response:
-        # if there is a next page
-        # add next page token to the params we pass to the function
-        params["pageToken"] =  response["nextPageToken"]
-    else:
-        # must be end of comments!!!!
-        break
-
-f.close()
-
-blob_client = blob_service_client.get_blob_client(container="data", blob=file_name)
-
-with open(file=f"./output/{file_name}", mode="rb") as data:
-    blob_client.upload_blob(data)
