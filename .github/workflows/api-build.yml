@@ -10,7 +10,7 @@ jobs:
     steps:
       - name: get repo
         run: |
-          git clone git@github.com:nhd1207/youtube_api.git /workspace
+          git clone git@github.com:nhd1207/youtube_api.git ~/workspace
           cd workspace
           git checkout api
           ls
