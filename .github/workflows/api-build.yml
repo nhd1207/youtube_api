@@ -7,7 +7,6 @@ on:
 env:
   NAME: youtube_api
   TAG: prod
-  IMAGE: $NAME:$TAG
   KUBECONFIG: ${{ secrets.KUBECONFIG }}
   REPO: ${{ secrets.REPO }}
   CHAT_DIR: ${{ secrets.CHART_DIR }}
@@ -25,8 +24,8 @@ jobs:
           git checkout api
       - name: build and push image
         run: |
-          docker build . -t $REPO/$IMAGE
-          docker push $REPO/$IMAGE
+          docker build . -t $REPO/$NAME:$TAG
+          docker push $REPO/$NAME:$TAG
   deploy:
     runs-on: slef-hosted
     steps:
