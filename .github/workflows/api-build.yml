@@ -10,25 +10,27 @@ env:
   REPO: ${{ secrets.REPO }}
   CHART_DIR: ${{ secrets.CHART_DIR }}
   VALUES_DIR: ${{ secrets.VALUES_DIR }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
 
 jobs:
   build-image:
-    runs-on: self-hosted
+    runs-on: main-runner
     steps:
       - name: clone
         run: |
-          sudo rm -rf ~/workspace/
-          git clone git@github.com:nhd1207/youtube_api.git ~/workspace
-          cd ~/workspace
+          rm -rf /workspace
+          git clone git@github.com:nhd1207/youtube_api.git /workspace
+          cd /workspace
           git checkout api
           docker build . -t $REPO/$NAME:$TAG
           docker push $REPO/$NAME:$TAG
 
   deploy:
-    runs-on: [self-hosted,deployment]
+    runs-on: main-runner
     steps:
-      - name: Deploying cluster
+      - name: Deploying to k8s
         run: |
+          echo $KUBE_CONFIG | base64 -d > ~/.kube/config
           helm upgrade --install --recreate-pods $NAME $CHART_DIR -f $VALUES_DIR/$NAME.yaml 
         
       
