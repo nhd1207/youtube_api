@@ -11,8 +11,7 @@ jobs:
       - name: get repo
         run: |
           sudo rm -rf ~/workspace/
-          mkdir ~/workspace
           git clone git@github.com:nhd1207/youtube_api.git ~/workspace
-          cd workspace
+          cd ~/workspace/youtube_api
           git checkout api
           ls
