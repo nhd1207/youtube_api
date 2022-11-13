@@ -17,7 +17,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Azure blob
-connect_str = "DefaultEndpointsProtocol=https;AccountName=nhdis402;AccountKey=fFcd6ChgUnWAdQljFlm7S8NBKenwgq/Y3QXbMPK/f8a9pQ3dInH4/VB4Dsn/ZpPFoXInLBsDM7Wu+AStesaMTQ==;EndpointSuffix=core.windows.net"
+connect_str = os.getenv("AZURE_CONN_STR")
 blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
@@ -172,11 +172,6 @@ def get_comments(youtube, **kwargs):
         **kwargs
     ).execute()
 
-@app.get("/drop")
-def drop():
-    comments.drop()
-    return("dropped")
-
 @app.get("/scrape")
 def scrape():
     args = request.args
@@ -236,5 +231,5 @@ def scrape():
     blob_client = blob_service_client.get_blob_client(container="data", blob=file_name)
 
     with open(file=f"./output/{file_name}", mode="rb") as data:
-        blob_client.upload_blob(data)
+        blob_client.upload_blob(data, overwrite=True)
     return(blob_client.url)
