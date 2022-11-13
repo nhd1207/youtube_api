@@ -1,6 +1,8 @@
 name: auto-ci
 
-on: [push]
+on: 
+  push: 
+    branches: [ api ]
 
 jobs:
   build-image:
