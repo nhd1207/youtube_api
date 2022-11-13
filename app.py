@@ -2,7 +2,6 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from flask import Flask, request, jsonify
-from pymongo import MongoClient
 from dotenv import load_dotenv
 from flask_cors import CORS, cross_origin
 from azure.identity import DefaultAzureCredential
@@ -14,17 +13,12 @@ import os
 import pickle
 
 load_dotenv()
-MONGO_URI = os.getenv('MONGO_URI')
 app = Flask(__name__)
 CORS(app)
-client = MongoClient(MONGO_URI)
 
 # Azure blob
 connect_str = "DefaultEndpointsProtocol=https;AccountName=nhdis402;AccountKey=fFcd6ChgUnWAdQljFlm7S8NBKenwgq/Y3QXbMPK/f8a9pQ3dInH4/VB4Dsn/ZpPFoXInLBsDM7Wu+AStesaMTQ==;EndpointSuffix=core.windows.net"
 blob_service_client = BlobServiceClient.from_connection_string(connect_str)
-
-db = client.youtube_db
-comments = db.comments
 
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
