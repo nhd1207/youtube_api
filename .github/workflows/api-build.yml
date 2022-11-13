@@ -26,7 +26,7 @@ jobs:
           docker push $REPO/$NAME:$TAG
 
   deploy:
-    runs-on: slef-hosted
+    runs-on: self-hosted
     steps:
       - name: Update cluster
         run: |
