@@ -26,6 +26,7 @@ jobs:
           docker push $REPO/$NAME:$TAG
 
   deploy:
+    needs: build-image
     runs-on: main-runner
     env:
       RELEASE_NAME: youtube-api
