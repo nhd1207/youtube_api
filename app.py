@@ -242,5 +242,5 @@ def scrape():
     blob_client = blob_service_client.get_blob_client(container="data", blob=file_name)
 
     with open(file=f"./output/{file_name}", mode="rb") as data:
-        blob_client.upload_blob(data)
+        blob_client.upload_blob(data, overwrite=true)
     return("scrape succeeded")
