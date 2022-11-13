@@ -243,4 +243,4 @@ def scrape():
 
     with open(file=f"./output/{file_name}", mode="rb") as data:
         blob_client.upload_blob(data)
-    return("scrape succeeded")
+    return(blob_client.url)
