@@ -9,7 +9,7 @@ env:
   TAG: prod
   KUBECONFIG: ${{ secrets.KUBECONFIG }}
   REPO: ${{ secrets.REPO }}
-  CHAT_DIR: ${{ secrets.CHART_DIR }}
+  CHART_DIR: ${{ secrets.CHART_DIR }}
   VALUES_DIR: ${{ secrets.VALUES_DIR }}
 
 jobs:
