@@ -20,13 +20,14 @@ from keras.preprocessing import text, sequence
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 
-train_X, train_y = pre_process_features(X_train, y_train, tokenized=True, lowercased = True)
-dev_X, dev_y = pre_process_features(X_dev, y_dev, tokenized=True, lowercased = True)
-test_X, test_y = pre_process_features(X_test, y_test, tokenized=True, lowercased = True)
 
-EMBEDDING_FILE = './cc.vi.300.vec'
 MODEL_FILE = './model/Text_CNN_model_v13.h5'
 
+import tensorflow as tf
+from tensorflow import keras
+
+text_model = keras.models.load_model('./model/Text_CNN_model_v13.h5')
+text_model.summary()
 
 # ## LOAD TOKENIZER
 
@@ -73,32 +74,6 @@ num_filters = 32
 
 # In[8]:
 
-
-# --------------LOAD WORD EMBEDDING -------------------------
-embeddings_index = {}
-with open(EMBEDDING_FILE, encoding='utf8') as f:
-    for line in f:
-        values = line.rstrip().rsplit(' ')
-        word = values[0]
-        coefs = np.asarray(values[1:], dtype='float32')
-        embeddings_index[word] = coefs
-
-
-tokenizer = text.Tokenizer(lower=False, filters='!"#$%&()*+,-./:;<=>?@[\\]^`{|}~\t\n')
-tokenizer.fit_on_texts(train_X)
-with open('./tokenizer.pickle', 'wb') as handle:
-    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
-
-import tensorflow as tf
-from tensorflow import keras
-
-text_model = keras.models.load_model('./model/Text_CNN_model_v13.h5')
-text_model.summary()
-
-
-# In[ ]:
-
-
 def LoadTokenzier(file_path):
     with open(file_path, 'rb') as f:
         # unpickler = pickle.Unpickler(f)
@@ -107,7 +82,7 @@ def LoadTokenzier(file_path):
     return tokenizer
 
 tokenzier_path = './tokenizer.pickle'
-tokenizer1 = LoadTokenzier(tokenzier_path)
+tokenizer = LoadTokenzier(tokenzier_path)
 
 
 # In[ ]:

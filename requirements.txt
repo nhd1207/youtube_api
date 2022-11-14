@@ -4,3 +4,5 @@ tensorflow-gpu==2.10.0
 keras
 pyyaml 
 h5py
+pandas
+seaborn
