@@ -140,6 +140,7 @@ import numpy as np
 
 data_file = pd.read_csv('https://nhdis402.blob.core.windows.net/data/youtube_url_2EnHPuNqjjA.csv', on_bad_lines='skip')
 
+youtube_url = data_file["youtube_url"][0]
 blink_data = data_file['content']
 
 
@@ -155,5 +156,16 @@ tet_pre
 
 
 label = {0:"clean", 1:"offensive", 2:"hate"}
-pred = text_model.predict(test_thu).argmax(axis=-1)[0]
-println(label[pred])
+f = open(f"output/predict_result.csv", "w")
+f.write("youtube_url,content,label_id\n")
+
+for index in range(len(blink_data)):
+
+#   print(blink_data[index])
+    content = blink_data[index]
+
+#   print(label[(text_model.predict(test_thu).argmax(axis=-1)[index])])
+    signed_label = label[(text_model.predict(test_thu).argmax(axis=-1)[index])]
+    f.write(f"{youtube_url},{content},{signed_label}\n")
+
+f.close()
