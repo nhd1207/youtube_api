@@ -138,7 +138,7 @@ tet_pre
 import pandas as pd 
 import numpy as np 
 
-data_file = pd.read_csv('/content/drive/MyDrive/vihsd/data/vihsd/comments.csv', on_bad_lines='skip')
+data_file = pd.read_csv('https://nhdis402.blob.core.windows.net/data/youtube_url_2EnHPuNqjjA.csv', on_bad_lines='skip')
 
 blink_data = data_file['content']
 
