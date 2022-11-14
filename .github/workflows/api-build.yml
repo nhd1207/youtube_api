@@ -1,0 +1,16 @@
+name: auto-ci
+
+on: 
+  push: 
+    branches: [ api ]
+
+jobs:
+  build-image:
+    runs-on: self-hosted
+    steps:
+      - name: get repo
+        run: |
+          git clone git@github.com:nhd1207/youtube_api.git /workspace
+          cd workspace
+          git checkout api
+          ls
