@@ -11,6 +11,7 @@ env:
   CHART_DIR: ${{ secrets.CHART_DIR }}
   VALUES_DIR: ${{ secrets.VALUES_DIR }}
   KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  CONFIGMAP_DIR: ${{ secrets.CONFIGMAP_DIR }}
 
 jobs:
   build-image:
@@ -34,6 +35,7 @@ jobs:
       - name: Deploying to k8s
         run: |
           echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+          kubectl apply -f $CONFIGMAP_DIR/$NAME.yaml
           helm upgrade --install --recreate-pods $RELEASE_NAME $CHART_DIR -f $VALUES_DIR/$NAME.yaml 
         
       
