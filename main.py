@@ -30,6 +30,20 @@ MODEL_FILE = './model/Text_CNN_model_v13.h5'
 
 # ## LOAD TOKENIZER
 
+def pre_process_features(X, y, tokenized = True, lowercased = True):
+
+    X = [preprocess(str(p), tokenized = tokenized, lowercased = lowercased) for p in list(X)]
+
+    for idx, ele in enumerate(X):
+
+        if not ele:
+
+            np.delete(X, idx)
+
+            np.delete(y, idx)
+
+    return X, y
+
 # In[6]:
 
 
@@ -94,58 +108,6 @@ def LoadTokenzier(file_path):
 
 tokenzier_path = './tokenizer.pickle'
 tokenizer1 = LoadTokenzier(tokenzier_path)
-
-
-# In[ ]:
-
-
-class EncodeInput: # Cái này tui code chơi thôi nếu đưa vô được OOP xong gọi ra thì tiện á
-    def __init__(self, sentence):
-        self.sentence = sentence
-
-    def LoadStopWord(self):
-        STOPWORDS = './data/vietnamese-stopwords-dash.txt'
-        with open(STOPWORDS, "r") as ins:
-            stopwords = []
-            for line in ins:
-                dd = line.strip('\n')
-                stopwords.append(dd)
-            stopwords = set(stopwords)
-
-    def filter_stop_words(self, sentence, stop_words):
-        new_sent = [word for word in self.sentence.split() if word not in stop_words]
-        self.sentence = ' '.join(new_sent)
-            
-        return self.sentence
-
-    def deEmojify(text):
-        regrex_pattern = re.compile(pattern = "["
-            u"\U0001F600-\U0001F64F"  # emoticons
-            u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-            u"\U0001F680-\U0001F6FF"  # transport & map symbols
-            u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                            "]+", flags = re.UNICODE)
-        return regrex_pattern.sub(r'',text)
-
-    def preprocess(text, tokenized = True, lowercased = True):
-        text = ViTokenizer.tokenize(text) if tokenized else text
-        text = filter_stop_words(text, stopwords)
-        text = deEmojify(text)
-        text = text.lower() if lowercased else text
-        return text
-
-    # --------------TRICH XUAT DAC TRUNG -------------------------
-    def pre_process_features(self, tokenized = True, lowercased = True):
-        self.sentence = [preprocess(str(p), tokenized = tokenized, lowercased = lowercased) for p in list(self.sentence)]
-        for idx, ele in enumerate(self.sentence):
-            if not ele:
-                np.delete(self.sentence, idx)
-        return self.sentence
-    
-    def EncodeInput(self, tokenizer, sequence_length=100):
-        X = tokenizer.texts_to_sequences(self.sentence)
-        X = pad_sequences(self.sentence, maxlen=sequence_length)
-        return X
 
 
 # In[ ]:
