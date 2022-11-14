@@ -15,7 +15,7 @@
             <div class="wrapper__welcome--black">Enter a link youtube URL</div>
 
         </div>
-        <form class="wrapper__form" action="https://is402.kailake.ml/url" method="get">
+        <form class="wrapper__form" target="_self" id="formElem">
             <div class="form__item">
                 <div class="form__item--input">
                     <input type="text" required name="url">
@@ -27,9 +27,33 @@
             <button type="submit" class="form__button--gradients">Submit</button>
 
         </form>
-
+        <div id="encoded"></div>
 
     </div>
+
+    <script>
+
+        var form = document.getElementById('formElem');
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+
+            console.log(form);
+            data = {
+                url: form.querySelector('input[name="url"]').value,
+            }
+
+            let response = await fetch('https://is402temp.azurewebsites.net/api/url', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+
+            let text = await response.text(); // read response body as text
+            document.querySelector("#decoded").innerHTML = text;
+        };
+    </script>
 </body>
 
 </html>
