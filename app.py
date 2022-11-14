@@ -27,4 +27,4 @@ def save_youtube_url():
     pattern = '[a-zA-Z0-9:/.?]+'
     id = re.findall(pattern, url)[1]
     comments.update_one({"id": id}, {"$set": { "id": id, "url": url, "signal": "start" }}, upsert=True)
-    return("succeed" + url)
+    return("Data has been saved: " + url)

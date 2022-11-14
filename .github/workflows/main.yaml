@@ -1,0 +1,42 @@
+name: save_url_ci_cd
+
+on: 
+  push: 
+    branches: [ save_url ]
+    
+env:
+  NAME: youtube-save-url
+  TAG: prod
+  REPO: ${{ secrets.REPO }}
+  CHART_DIR: ${{ secrets.CHART_DIR }}
+  VALUES_DIR: ${{ secrets.VALUES_DIR }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  CONFIGMAP_DIR: ${{ secrets.CONFIGMAP_DIR }}
+
+jobs:
+  build-image:
+    runs-on: main-runner
+    steps:
+      - name: clone
+        run: |
+          rm -rf /workspace
+          git clone git@github.com:nhd1207/youtube_api.git /workspace
+          cd /workspace
+          git checkout save_url
+          docker build . -t $REPO/$NAME:$TAG
+          docker push $REPO/$NAME:$TAG
+
+  deploy:
+    needs: build-image
+    runs-on: main-runner
+    env:
+      RELEASE_NAME: youtube-save-url
+    steps:
+      - name: Deploying to k8s
+        run: |
+          echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+          kubectl apply -f $CONFIGMAP_DIR/$NAME.yaml
+          helm upgrade --install --recreate-pods $RELEASE_NAME $CHART_DIR -f $VALUES_DIR/$NAME.yaml 
+        
+      
+    
