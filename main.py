@@ -20,16 +20,6 @@ from keras.preprocessing import text, sequence
 from sklearn.metrics import f1_score, confusion_matrix, accuracy_score
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
 
-train_X, train_y = pre_process_features(X_train, y_train, tokenized=True, lowercased = True)
-dev_X, dev_y = pre_process_features(X_dev, y_dev, tokenized=True, lowercased = True)
-test_X, test_y = pre_process_features(X_test, y_test, tokenized=True, lowercased = True)
-
-EMBEDDING_FILE = './cc.vi.300.vec'
-MODEL_FILE = './model/Text_CNN_model_v13.h5'
-
-
-# ## LOAD TOKENIZER
-
 def pre_process_features(X, y, tokenized = True, lowercased = True):
 
     X = [preprocess(str(p), tokenized = tokenized, lowercased = lowercased) for p in list(X)]
@@ -43,6 +33,16 @@ def pre_process_features(X, y, tokenized = True, lowercased = True):
             np.delete(y, idx)
 
     return X, y
+
+train_X, train_y = pre_process_features(X_train, y_train, tokenized=True, lowercased = True)
+dev_X, dev_y = pre_process_features(X_dev, y_dev, tokenized=True, lowercased = True)
+test_X, test_y = pre_process_features(X_test, y_test, tokenized=True, lowercased = True)
+
+EMBEDDING_FILE = './cc.vi.300.vec'
+MODEL_FILE = './model/Text_CNN_model_v13.h5'
+
+
+# ## LOAD TOKENIZER
 
 # In[6]:
 
