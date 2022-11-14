@@ -1,3 +1,80 @@
+# Text CNN 
+import pandas as pd 
+import numpy as np 
+import re
+import pickle
+
+import seaborn as sn
+import pandas as pd
+import matplotlib.pyplot as plt
+
+import tensorflow as tf
+from keras.layers import Input, Dense, Embedding, Conv2D, MaxPool2D
+from keras.layers import Reshape, Flatten, Dropout, Concatenate
+from keras.callbacks import ModelCheckpoint
+from keras.optimizers import Adam
+from keras.models import Model
+from keras.utils import to_categorical, pad_sequences
+from keras.preprocessing import text, sequence
+
+from sklearn.metrics import f1_score, confusion_matrix, accuracy_score
+from sklearn.model_selection import train_test_split, StratifiedShuffleSplit
+
+train_X, train_y = pre_process_features(X_train, y_train, tokenized=True, lowercased = True)
+dev_X, dev_y = pre_process_features(X_dev, y_dev, tokenized=True, lowercased = True)
+test_X, test_y = pre_process_features(X_test, y_test, tokenized=True, lowercased = True)
+
+EMBEDDING_FILE = './cc.vi.300.vec'
+MODEL_FILE = './model/Text_CNN_model_v13.h5'
+
+
+# ## LOAD TOKENIZER
+
+# In[6]:
+
+
+def make_featues(X, y, tokenizer, is_one_hot_label=True):
+    X = tokenizer.texts_to_sequences(X)
+    X = pad_sequences(X, maxlen=sequence_length)
+    if is_one_hot_label: 
+        y = to_categorical(y, num_classes=3)
+
+    return X, y
+
+
+# In[7]:
+
+
+vocabulary_size = 10000
+sequence_length = 100
+
+embedding_dim = 300
+batch_size = 256
+epochs = 40
+drop = 0.5
+
+filter_sizes = [2,3,5]
+num_filters = 32
+
+
+# In[8]:
+
+
+# --------------LOAD WORD EMBEDDING -------------------------
+embeddings_index = {}
+with open(EMBEDDING_FILE, encoding='utf8') as f:
+    for line in f:
+        values = line.rstrip().rsplit(' ')
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
+
+
+tokenizer = text.Tokenizer(lower=False, filters='!"#$%&()*+,-./:;<=>?@[\\]^`{|}~\t\n')
+tokenizer.fit_on_texts(train_X)
+with open('./tokenizer.pickle', 'wb') as handle:
+    pickle.dump(tokenizer, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
 import tensorflow as tf
 from tensorflow import keras
 
@@ -134,9 +211,6 @@ tet_pre
 
 
 # In[ ]:
-
-import pandas as pd 
-import numpy as np 
 
 data_file = pd.read_csv('https://nhdis402.blob.core.windows.net/data/youtube_url_2EnHPuNqjjA.csv', on_bad_lines='skip')
 
