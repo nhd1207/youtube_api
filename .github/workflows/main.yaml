@@ -1,0 +1,43 @@
+name: auto-ci
+
+on: 
+  push: 
+    branches: [ predict ]
+    
+env:
+  NAME: youtube-api
+  TAG: model
+  REPO: ${{ secrets.REPO }}
+  CHART_DIR: ${{ secrets.CHART_DIR }}
+  VALUES_DIR: ${{ secrets.VALUES_DIR }}
+  KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+  CONFIGMAP_DIR: ${{ secrets.CONFIGMAP_DIR }}
+
+jobs:
+  build-image:
+    runs-on: main-runner
+    steps:
+      - name: clone
+        run: |
+          rm -rf /workspace
+          git clone git@github.com:nhd1207/youtube_api.git /workspace
+          cd /workspace
+          git checkout model
+          docker build . -t $REPO/$NAME:$TAG
+          docker push $REPO/$NAME:$TAG
+
+  deploy:
+    needs: build-image
+    runs-on: main-runner
+    env:
+      RELEASE_NAME: youtube-api
+      SERVICE_NAME: is402-model
+    steps:
+      - name: Deploying to k8s
+        run: |
+          echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+          kubectl apply -f $CONFIGMAP_DIR/$SERVICE_NAME.yaml
+          helm upgrade --install --recreate-pods $RELEASE_NAME $CHART_DIR -f $VALUES_DIR/$SERVICE_NAME.yaml 
+        
+      
+    
