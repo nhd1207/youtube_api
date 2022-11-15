@@ -159,7 +159,7 @@ app = Flask(__name__)
 
 @app.get("/predict")
 def predict():
-    app.logging.info("predicting...")
+    app.logger.info("predicting...")
     blob_url = request.args.get('blob_url')
     # In[ ]:
 
@@ -199,7 +199,7 @@ def predict():
         # f.write(f"{youtube_url},{content},{signed_label}\n")
         response["result"].append({"content": content, "label": signed_label})
     
-    app.logging.info("done predicting.")
+    app.logger.info("done predicting.")
     return response
 
     # f.close()
