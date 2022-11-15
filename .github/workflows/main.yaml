@@ -30,7 +30,7 @@ jobs:
     needs: build-image
     runs-on: main-runner
     env:
-      RELEASE_NAME: youtube-api
+      RELEASE_NAME: is402-model
       SERVICE_NAME: is402-model
     steps:
       - name: Deploying to k8s
