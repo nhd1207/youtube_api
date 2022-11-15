@@ -45,10 +45,6 @@ def pre_process_features(X, y, tokenized = True, lowercased = True):
 
     return X, y
 
-train_X, train_y = pre_process_features(X_train, y_train, tokenized=True, lowercased = True)
-dev_X, dev_y = pre_process_features(X_dev, y_dev, tokenized=True, lowercased = True)
-test_X, test_y = pre_process_features(X_test, y_test, tokenized=True, lowercased = True)
-
 EMBEDDING_FILE = './cc.vi.300.vec'
 MODEL_FILE = './model/Text_CNN_model_v13.h5'
 
