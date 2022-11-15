@@ -157,36 +157,51 @@ test_thu = EncodeSentence(tet_pre,tokenizer)
 tet_pre
 
 
-# In[ ]:
+from flask import Flask, request
 
-data_file = pd.read_csv('https://nhdis402.blob.core.windows.net/data/youtube_url_2EnHPuNqjjA.csv', on_bad_lines='skip')
+app = Flask(__name__)
 
-youtube_url = data_file["youtube_url"][0]
-blink_data = data_file['content']
+@app.get("/")
+def predict():
+    blob_url = request.args.get('blob_url')
+    # In[ ]:
 
+    data_file = pd.read_csv(blob_url, on_bad_lines='skip')
 
-
-tet_pre = pre_process_features(blink_data)
-
-test_thu = EncodeSentence(tet_pre,tokenizer)
-
-tet_pre
-
-
-# In[19]:
+    youtube_url = data_file["youtube_url"][0]
+    blink_data = data_file['content']
 
 
-label = {0:"clean", 1:"offensive", 2:"hate"}
-f = open(f"output/predict_result.csv", "w")
-f.write("youtube_url,content,label_id\n")
 
-for index in range(len(blink_data)):
+    tet_pre = pre_process_features(blink_data)
 
-#   print(blink_data[index])
-    content = blink_data[index]
+    test_thu = EncodeSentence(tet_pre,tokenizer)
 
-#   print(label[(text_model.predict(test_thu).argmax(axis=-1)[index])])
-    signed_label = label[(text_model.predict(test_thu).argmax(axis=-1)[index])]
-    f.write(f"{youtube_url},{content},{signed_label}\n")
+    tet_pre
 
-f.close()
+
+    # In[19]:
+
+
+    label = {0:"clean", 1:"offensive", 2:"hate"}
+    response = {
+        "success": True,
+        "result": []
+    }
+    # f = open(f"output/predict_result.csv", "w")
+    # f.write("youtube_url,content,label_id\n")
+
+
+    for index in range(len(blink_data)):
+
+    #   print(blink_data[index])
+        content = blink_data[index]
+
+    #   print(label[(text_model.predict(test_thu).argmax(axis=-1)[index])])
+        signed_label = label[(text_model.predict(test_thu).argmax(axis=-1)[index])]
+        # f.write(f"{youtube_url},{content},{signed_label}\n")
+        response["result"].append({"content": content, "label": signed_label})
+    
+    return response
+
+    # f.close()
