@@ -157,7 +157,7 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
-@app.get("/")
+@app.get("/predict")
 def predict():
     app.logging.info("predicting...")
     blob_url = request.args.get('blob_url')
