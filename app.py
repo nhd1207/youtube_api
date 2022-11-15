@@ -17,9 +17,9 @@ app = Flask(__name__)
 CORS(app)
 
 # Azure blob
-connect_str = os.getenv("BLOB_CONNECTION_STRING")
-blob_container = os.getenv("CONTAINER")
-blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+# connect_str = os.getenv("BLOB_CONNECTION_STRING")
+# blob_container = os.getenv("CONTAINER")
+# blob_service_client = BlobServiceClient.from_connection_string(connect_str)
 
 SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 
@@ -195,9 +195,7 @@ def scrape():
     pattern = '[a-zA-Z0-9:/.?]+'
     get_id = re.findall(pattern, url)[1]
     file_name = f"youtube_url_{get_id}.csv"
-    f = open(f"output/{file_name}", "w")
-
-    f.write("youtube_url,content\n")
+    resObject = { "file_name": file_name, "youtube_url": url, "comments": [] }
 
     while True:
         # make API call to get all comments from the channel (including posts & videos)
@@ -218,7 +216,7 @@ def scrape():
             # ==================================\n
             # """)
 
-            f.write(f"{url},{comment}\n")
+            resObject["comments"].append(comment)
         if "nextPageToken" in response:
             # if there is a next page
             # add next page token to the params we pass to the function
@@ -227,10 +225,8 @@ def scrape():
             # must be end of comments!!!!
             break
 
-    f.close()
+    # blob_client = blob_service_client.get_blob_client(container=blob_container, blob=file_name)
 
-    blob_client = blob_service_client.get_blob_client(container=blob_container, blob=file_name)
-
-    with open(file=f"./output/{file_name}", mode="rb") as data:
-        blob_client.upload_blob(data, overwrite=True)
-    return(blob_client.url)
+    # with open(file=f"./output/{file_name}", mode="rb") as data:
+    #     blob_client.upload_blob(data, overwrite=True)
+    return resObject
