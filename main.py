@@ -179,8 +179,6 @@ def predict():
 
     # In[19]:
 
-
-    label = {0:"clean", 1:"offensive", 2:"hate"}
     response = {
         "success": True,
         "result": []
@@ -195,7 +193,7 @@ def predict():
         content = blink_data[index]
 
     #   print(label[(text_model.predict(test_thu).argmax(axis=-1)[index])])
-        signed_label = label[(text_model.predict(test_thu).argmax(axis=-1)[index])]
+        signed_label = (text_model.predict(test_thu).argmax(axis=-1)[index])
         # f.write(f"{youtube_url},{content},{signed_label}\n")
         response["result"].append({"content": content, "label": signed_label})
     
