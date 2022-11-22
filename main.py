@@ -157,6 +157,18 @@ from flask import Flask, request
 
 app = Flask(__name__)
 
+# Azure Blob
+############
+
+import os
+from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+
+connect_str = os.getenv("BLOB_CONNECTION_STRING")
+blob_container = os.getenv("CONTAINER")
+blob_service_client = BlobServiceClient.from_connection_string(connect_str)
+
+############
+
 @app.get("/predict")
 def predict():
     app.logger.info("predicting...")
@@ -168,7 +180,9 @@ def predict():
     youtube_url = data_file["youtube_url"][0]
     blink_data = data_file['content']
 
-
+    pattern = '[a-zA-Z0-9:/.?]+'
+    get_id = re.findall(pattern, youtube_url)[1]
+    file_name = f"youtube_url_{get_id}.csv"
 
     tet_pre = pre_process_features(blink_data)
 
@@ -183,8 +197,9 @@ def predict():
     label = {0:"0", 1:"1", 2:"2"}
     response = {
         "success": True,
-        "result": []
+        "blob_url": "" 
     }
+    data = "youtube_url,content,label_id\n"
     # f = open(f"output/predict_result.csv", "w")
     # f.write("youtube_url,content,label_id\n")
 
@@ -197,9 +212,13 @@ def predict():
     #   print(label[(text_model.predict(test_thu).argmax(axis=-1)[index])])
         signed_label = label[(text_model.predict(test_thu).argmax(axis=-1)[index])]
         # f.write(f"{youtube_url},{content},{signed_label}\n")
-        response["result"].append({"content": content, "label": signed_label})
+        # response["result"].append({"content": content, "label": signed_label})
+        data += f"{youtube_url},{content},{signed_label}\n"
     
+    blob_client = blob_service_client.get_blob_client(container=blob_container, blob=file_name)
+    blob_client.upload_blob(data, overwrite=True)
     app.logger.info("done predicting.")
+    response["blob_url"] = blob_client.url
     return response
 
     # f.close()
