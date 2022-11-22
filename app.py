@@ -206,7 +206,7 @@ def scrape():
             break
         # print(items[1]["snippet"]["topLevelComment"]["snippet"])
         for item in items:
-            comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"].replace("<br>", " ").repace("\n", " ")
+            comment = item["snippet"]["topLevelComment"]["snippet"]["textDisplay"].replace("<br>", " ").replace("\n", " ")
             comment = comment.replace(",", "&#44;")
 
             # f.write(f"""
