@@ -1,12 +1,12 @@
-name: auto-ci
+name: get-results
 
 on: 
   push: 
-    branches: [ api ]
+    branches: [ get-result ]
     
 env:
   NAME: youtube_api
-  TAG: prod
+  TAG: get-result
   REPO: ${{ secrets.REPO }}
   CHART_DIR: ${{ secrets.CHART_DIR }}
   VALUES_DIR: ${{ secrets.VALUES_DIR }}
@@ -30,13 +30,15 @@ jobs:
     needs: build-image
     runs-on: main-runner
     env:
-      RELEASE_NAME: youtube-api
+      RELEASE_NAME: get-result
+      SERVICE_NAME: get-result
+      NAMESPACE: is402
     steps:
       - name: Deploying to k8s
         run: |
           echo $KUBE_CONFIG | base64 -d > ~/.kube/config
-          kubectl apply -f $CONFIGMAP_DIR/$NAME.yaml
-          helm upgrade --install --recreate-pods $RELEASE_NAME $CHART_DIR -f $VALUES_DIR/$NAME.yaml 
+          kubectl apply -f $CONFIGMAP_DIR/$SERVICE_NAME.yaml -n $NAMESPACE
+          helm upgrade --install --recreate-pods $RELEASE_NAME $CHART_DIR -f $VALUES_DIR/$SERVICE_NAME.yaml -n $NAMESPACE
         
       
     
