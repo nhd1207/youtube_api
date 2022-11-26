@@ -1,4 +1,4 @@
-name: auto-ci
+name: model
 
 on: 
   push: 
