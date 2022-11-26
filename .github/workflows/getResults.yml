@@ -5,7 +5,7 @@ on:
     branches: [ get-result ]
     
 env:
-  NAME: youtube_api
+  NAME: youtube-api
   TAG: get-result
   REPO: ${{ secrets.REPO }}
   CHART_DIR: ${{ secrets.CHART_DIR }}
