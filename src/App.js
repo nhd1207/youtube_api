@@ -74,39 +74,52 @@ function App() {
       if (result?.data?.data) {
         setResult(result?.data.data);
       }
+    } else {
+      const result = await axios({
+        url: `https://results.ndxcode.tk/result?url=${input}`,
+        method: 'GET',
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+      })
+      if (result?.data?.data) {
+        setResult(result?.data.data);
+      }
     }
   }
 
   useEffect(() => {
-    timer.current = setInterval(async () => {
-      try {
-        const result = await axios({
-          url: `https://results.ndxcode.tk/result?url=${input}`,
-          method: 'GET',
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        })
-        if (result?.data?.data) {
-          console.log(result?.data);
-          setResult(result?.data.data);
+    if (result && result.length > 0)
+      timer.current = setInterval(async () => {
+        try {
+          const result = await axios({
+            url: `https://results.ndxcode.tk/result?url=${input}`,
+            method: 'GET',
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+          })
+          if (result?.data?.data) {
+            console.log(result?.data);
+            setResult(result?.data.data);
+          }
+        } catch (e) {
+          const result = await axios({
+            url: `https://results.ndxcode.tk/result?url=${input}`,
+            method: 'GET',
+            headers: {
+              "Access-Control-Allow-Origin": "*",
+              'Content-Type': 'application/json; charset=utf-8',
+            },
+          })
+          if (result?.data?.data) {
+            console.log(result?.data);
+            setResult(result?.data.data);
+          }
         }
-      } catch (e) {
-        const result = await axios({
-          url: `https://results.ndxcode.tk/result?url=${input}`,
-          method: 'GET',
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            'Content-Type': 'application/json; charset=utf-8',
-          },
-        })
-        if (result?.data?.data) {
-          console.log(result?.data);
-          setResult(result?.data.data);
-        }
-      }
-    }, 3000);
+      }, 5000);
 
     // clear on component unmount
     return () => {
