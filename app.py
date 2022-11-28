@@ -10,7 +10,7 @@ import pickle
 load_dotenv()
 app = Flask(__name__)
 MONGO_URI = os.getenv("MONGO_URI")
-cors = CORS(app, resources={r'/*': {'origins': "https://is402.ndxcode.tk/"}})
+cors = CORS(app, origins=["https://is402.ndxcode.tk/", "localhost:3000"])
 client = MongoClient(MONGO_URI)
 
 db = client.Youtube
