@@ -77,7 +77,36 @@ function App() {
   }
 
   useEffect(() => {
-    setTimeout(() => { onPredict() }, 10000)
+    (async function () {
+      try {
+        const result = await axios({
+          url: `https://results.ndxcode.tk/result?url=${input}`,
+          method: 'GET',
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        })
+        if (result) {
+          console.log(result?.data);
+          setResult(result?.data.data);
+        }
+      } catch (e) {
+        const result = await axios({
+          url: `https://results.ndxcode.tk/result?url=${input}`,
+          method: 'GET',
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            'Content-Type': 'application/json; charset=utf-8',
+          },
+        })
+        if (result) {
+          console.log(result?.data);
+          setResult(result?.data.data);
+        }
+      }
+    })();
+
   }, [result])
   return (
     <div className="wrapper">
