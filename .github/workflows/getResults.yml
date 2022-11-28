@@ -22,7 +22,7 @@ jobs:
           rm -rf /workspace
           git clone git@github.com:nhd1207/youtube_api.git /workspace
           cd /workspace
-          git checkout api
+          git checkout get-result
           docker build . -t $REPO/$NAME:$TAG
           docker push $REPO/$NAME:$TAG
 
