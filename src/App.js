@@ -69,8 +69,7 @@ function App() {
           'Content-Type': 'application/json; charset=utf-8',
         },
       })
-      if (result) {
-        console.log(result?.data);
+      if (result?.data?.data) {
         setResult(result?.data.data);
       }
     }
@@ -87,7 +86,7 @@ function App() {
             'Content-Type': 'application/json; charset=utf-8',
           },
         })
-        if (result) {
+        if (result?.data?.data) {
           console.log(result?.data);
           setResult(result?.data.data);
         }
@@ -100,7 +99,7 @@ function App() {
             'Content-Type': 'application/json; charset=utf-8',
           },
         })
-        if (result) {
+        if (result?.data?.data) {
           console.log(result?.data);
           setResult(result?.data.data);
         }
