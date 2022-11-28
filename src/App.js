@@ -60,7 +60,7 @@ function App() {
     })
     if (res && res?.data) {
       const result = await axios({
-        url: `http://results.ndxcode.tk/result?url=${input}`,
+        url: `https://results.ndxcode.tk/result?url=${input}`,
         method: 'GET',
         headers: {
           "Access-Control-Allow-Origin": "*",
