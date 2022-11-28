@@ -7,5 +7,6 @@ h5py
 pandas
 seaborn
 Flask
+flask-cors
 azure-storage-blob
 azure-identity
