@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import { useEffect, useInsertionEffect, useState } from 'react';
+import { useEffect, useInsertionEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
 function App() {
@@ -8,6 +8,8 @@ function App() {
   const [blobURL, setBlobURL] = useState("");
   const [result, setResult] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  const timer = useRef(null);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -76,7 +78,7 @@ function App() {
   }
 
   useEffect(() => {
-    (async function () {
+    timer.current = setInterval(async () => {
       try {
         const result = await axios({
           url: `https://results.ndxcode.tk/result?url=${input}`,
@@ -104,9 +106,15 @@ function App() {
           setResult(result?.data.data);
         }
       }
-    })();
+    }, 3000);
 
-  }, [result])
+    // clear on component unmount
+    return () => {
+      clearInterval(timer.current);
+    };
+
+  }, [result]);
+
   return (
     <div className="wrapper">
       <div className="wrapper__welcome">
