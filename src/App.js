@@ -6,6 +6,7 @@ import axios from 'axios';
 function App() {
   const [input, setInput] = useState("");
   const [blobURL, setBlobURL] = useState("");
+  const [result, setResult] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e) => {
@@ -53,6 +54,7 @@ function App() {
     const res = await axios({
       url: `https://model.ndxcode.tk/predict?blob_url=${blobURL}`,
       method: 'GET',
+      // timeout: 200000,
       headers: {
         "Access-Control-Allow-Origin": "*",
         'Content-Type': 'application/json; charset=utf-8',
@@ -69,11 +71,14 @@ function App() {
       })
       if (result) {
         console.log(result?.data);
+        setResult(result?.data.data);
       }
     }
   }
 
-
+  useEffect(() => {
+    setTimeout(() => { onPredict() }, 10000)
+  }, [result])
   return (
     <div className="wrapper">
       <div className="wrapper__welcome">
@@ -120,15 +125,16 @@ function App() {
           </tr>
         </thead>
         <tbody>
+          {
+            result?.map((item, index) => (
+              <tr key={index}>
+                <td>{item?.comment}</td>
+                <td>{item?.label_id}</td>
+              </tr>
+            ))
+          }
 
-          <tr>
-            <td>Peter</td>
-            <td>Griffin</td>
-          </tr>
-          <tr>
-            <td>Lois</td>
-            <td>Griffin</td>
-          </tr>
+
         </tbody>
       </table>
       <div id="encoded"></div>
