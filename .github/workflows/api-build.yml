@@ -2,7 +2,7 @@ name: frontend
 
 on: 
   push: 
-    branches: [ get-result ]
+    branches: [ dev_fe ]
     
 env:
   NAME: youtube-api
@@ -22,7 +22,7 @@ jobs:
           rm -rf /workspace
           git clone git@github.com:nhd1207/youtube_api.git /workspace
           cd /workspace
-          git checkout get-result
+          git checkout dev_fe
           docker build . -t $REPO/$NAME:$TAG
           docker push $REPO/$NAME:$TAG
 
