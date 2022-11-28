@@ -28,5 +28,5 @@ def result():
         label_id = document["label_id"]
         response["data"].append({ "comment": comment, "label_id": label_id})
 
-    if len(response["data"]) == 0: return {"success": False, "message": "data not found"}, 404
+    if len(response["data"]) == 0: return {"success": False, "message": "data not found"}, 200
     return response
