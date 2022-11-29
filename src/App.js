@@ -127,7 +127,7 @@ function App() {
 
       {
         result && result.length > 0 ?
-          <div style={{ height: "500px", overflowY: "auto" }}>
+          <div style={{ height: "500px", overflowY: "auto", marginTop: 50 }}>
             <table className="wrapper__table">
 
               <thead>
