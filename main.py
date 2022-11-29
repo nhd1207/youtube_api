@@ -157,7 +157,7 @@ from flask import Flask, request
 from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
-cors = CORS(app, origins=["https://is402.ndxcode.tk/", "localhost:3000"])
+cors = CORS(app, origins=["https://is402.ndxcode.tk", "localhost:3000"])
 
 # Azure Blob
 ############
