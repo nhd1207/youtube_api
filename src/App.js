@@ -8,6 +8,8 @@ function App() {
   const [blobURL, setBlobURL] = useState("");
   const [result, setResult] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [isEndModel, setIsEndModel] = useState(false);
+  const [loadingResult, setLoadingResult] = useState(false);
 
   const timer = useRef(null);
 
@@ -17,21 +19,6 @@ function App() {
     const data = {
       url: input,
     }
-      // fetch('https://is402main.azurewebsites.net/api/save-url?code=qnPIJsAIPUFIZfaZ0jiFyD8gIqrrLvrwXc67YXufSNECAzFulHi-FQ==', {
-      //   method: 'POST',
-      //   headers: { "Content-type": "application/json; charset=UTF-8" },
-      //   body: JSON.stringify(data),
-      // }).then((res) => console.log(res.text()))
-      // if (rawResponse.text()) {
-      ;
-    // setBlobURL(rawResponse.text());
-    // const result = await fetch(`http://model.ndxcode.tk/predict?blob_url=${rawResponse.text()}`, {
-    //   method: 'GET',
-    //   headers: { "Content-type": "application/json; charset=UTF-8" }
-    // }
-    // );
-
-    // }
 
     setLoading(true);
     const res = await axios({
@@ -52,7 +39,8 @@ function App() {
 
   const onPredict = async (e) => {
     e.preventDefault();
-
+    setLoadingResult(true);
+    setIsEndModel(false);
     const res = await axios({
       url: `https://model.ndxcode.tk/predict?blob_url=${blobURL}`,
       method: 'GET',
@@ -63,34 +51,12 @@ function App() {
       },
     })
     if (res && res?.data) {
-      const result = await axios({
-        url: `https://results.ndxcode.tk/result?url=${input}`,
-        method: 'GET',
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      })
-      if (result?.data?.data) {
-        setResult(result?.data.data);
-      }
-    } else {
-      const result = await axios({
-        url: `https://results.ndxcode.tk/result?url=${input}`,
-        method: 'GET',
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      })
-      if (result?.data?.data) {
-        setResult(result?.data.data);
-      }
+      setIsEndModel(true);
     }
   }
 
   useEffect(() => {
-    if (result && result.length > 0)
+    if (isEndModel)
       timer.current = setInterval(async () => {
         try {
           const result = await axios({
@@ -104,6 +70,19 @@ function App() {
           if (result?.data?.data) {
             console.log(result?.data);
             setResult(result?.data.data);
+          } else {
+            const result = await axios({
+              url: `https://results.ndxcode.tk/result?url=${input}`,
+              method: 'GET',
+              headers: {
+                "Access-Control-Allow-Origin": "*",
+                'Content-Type': 'application/json; charset=utf-8',
+              },
+            })
+            if (result?.data?.data) {
+              console.log(result?.data);
+              setResult(result?.data.data);
+            }
           }
         } catch (e) {
           const result = await axios({
@@ -126,7 +105,7 @@ function App() {
       clearInterval(timer.current);
     };
 
-  }, [result]);
+  }, [isEndModel]);
 
   return (
     <div className="wrapper">
@@ -152,7 +131,6 @@ function App() {
             <div className="form__item">
               <div className="form__item--input">
                 <input type="text" required name="blob_url" value={blobURL} readOnly />
-                {/* <label>Link Blob</label> */}
               </div>
             </div>
             <button className="form__button--gradients" onClick={onPredict}> Detect Hate Speech</button>
@@ -160,35 +138,32 @@ function App() {
         )
       }
 
+      {
+        result && result.length > 0 ?
+          <div style={{ height: "500px", overflowY: "auto" }}>
+            <table className="wrapper__table">
 
-      <table className="wrapper__table">
-        {/* <colgroup>
-          <col style="width: 80%;" />
-          <col style="width: 20%;" />
-        </colgroup> */}
-        <thead>
+              <thead>
+                <tr>
+                  <th>Bình Luận</th>
+                  <th>Kết quả</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  result?.map((item, index) => (
+                    <tr key={index}>
+                      <td style={{ color: item?.label_id === "2" ? "red" : item?.label_id === "1" ? "orange" : "black" }}>{item?.comment}</td>
+                      <td style={{ color: item?.label_id === "2" ? "red" : item?.label_id === "1" ? "orange" : "black", padding: "0 10px" }}>{item?.label_id === "2" ? "hate" : item?.label_id === "1" ? "offensive" : "clean"}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div> : (loadingResult ? <>Loading...</> : <></>
+          )
+      }
 
-          <tr>
-            <th>Bình Luận</th>
-            <th>Kết quả</th>
-          </tr>
-        </thead>
-        <tbody>
-          {
-            result?.map((item, index) => (
-              <tr key={index}>
-                <td>{item?.comment}</td>
-                <td>{item?.label_id}</td>
-              </tr>
-            ))
-          }
-
-
-        </tbody>
-      </table>
-      <div id="encoded"></div>
-
-      <script src="./index.js"></script>
     </div >
 
   );
