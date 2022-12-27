@@ -15,7 +15,7 @@ env:
 
 jobs:
   build-image:
-    runs-on: main-runner
+    runs-on: eks
     steps:
       - name: clone
         run: |
@@ -33,10 +33,18 @@ jobs:
       RELEASE_NAME: is402-fe
       SERVICE_NAME: is402-fe
       NAMESPACE: is402
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} 
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
+      AWS_EKS_NAME: ${{ secrets.AWS_EKS_NAME }}
+      
     steps:
       - name: Deploying to k8s
         run: |
-          echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+          # echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+          echo -e "[default]\naws_access_key_id = $AWS_ACCESS_KEY_ID \naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
+          aws eks --region $AWS_DEFAULT_REGION --profile default update-kubeconfig --name $AWS_EKS_NAME
+          
           kubectl apply -f $CONFIGMAP_DIR/$SERVICE_NAME.yaml -n $NAMESPACE
           helm upgrade --install --recreate-pods $RELEASE_NAME $CHART_DIR -f $VALUES_DIR/$SERVICE_NAME.yaml -n $NAMESPACE
         
