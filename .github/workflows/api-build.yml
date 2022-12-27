@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Deploying to k8s
         run: |
+          rm -rf ~/.aws
+          mkdir ~/.aws && touch credentials
           # echo $KUBE_CONFIG | base64 -d > ~/.kube/config
           echo -e "[default]\naws_access_key_id = $AWS_ACCESS_KEY_ID \naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
           aws eks --region $AWS_DEFAULT_REGION --profile default update-kubeconfig --name $AWS_EKS_NAME
