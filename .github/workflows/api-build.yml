@@ -28,7 +28,7 @@ jobs:
 
   deploy:
     needs: build-image
-    runs-on: main-runner
+    runs-on: eks
     env:
       RELEASE_NAME: is402-fe
       SERVICE_NAME: is402-fe
